@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
+import { noRoutesFound } from './app/middlewares/noRoutesFound';
 
 const app: Application = express();
 
@@ -13,5 +14,7 @@ app.get('/', (req: Request, res: Response) => {
     message: 'MEETING ROOM BOOKING SYSTEM server is running successfully!',
   });
 });
+
+app.use(noRoutesFound);
 
 export default app;

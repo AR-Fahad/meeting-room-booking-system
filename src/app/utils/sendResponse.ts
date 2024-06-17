@@ -5,10 +5,10 @@ type TPayload<T> = {
   statusCode: number;
   message: string;
   token?: string;
-  data: T;
+  data?: T;
 };
 
-export const sendResponse = <T>(res: Response, payload: TPayload<T>) => {
+export const sendResponse = async <T>(res: Response, payload: TPayload<T>) => {
   const { success, statusCode, message, token, data } = payload;
 
   if (token) {
@@ -18,6 +18,12 @@ export const sendResponse = <T>(res: Response, payload: TPayload<T>) => {
       message,
       token,
       data,
+    });
+  } else if (!data) {
+    res.status(statusCode).json({
+      success,
+      statusCode,
+      message,
     });
   } else {
     res.status(statusCode).json({
