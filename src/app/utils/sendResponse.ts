@@ -19,7 +19,7 @@ export const sendResponse = async <T>(res: Response, payload: TPayload<T>) => {
       token,
       data,
     });
-  } else if (!data) {
+  } else if (data === 'undefined') {
     res.status(statusCode).json({
       success,
       statusCode,

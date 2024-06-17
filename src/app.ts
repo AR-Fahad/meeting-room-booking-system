@@ -1,6 +1,8 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import { noRoutesFound } from './app/middlewares/noRoutesFound';
+import { globalErrorHandle } from './app/middlewares/globalErrorHandle';
+import { router } from './app/routes/routes';
 
 const app: Application = express();
 
@@ -8,12 +10,17 @@ const app: Application = express();
 app.use(express.json());
 app.use(cors());
 
+// routes
+app.use('/api', router);
+
 app.get('/', (req: Request, res: Response) => {
   res.json({
     success: true,
     message: 'MEETING ROOM BOOKING SYSTEM server is running successfully!',
   });
 });
+
+app.use(globalErrorHandle);
 
 app.use(noRoutesFound);
 
