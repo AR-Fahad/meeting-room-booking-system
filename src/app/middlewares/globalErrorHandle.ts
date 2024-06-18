@@ -9,9 +9,11 @@ export const globalErrorHandle = async (
   res: Response,
   next: NextFunction,
 ) => {
-  let message = 'Error!';
+  // eslint-disable-next-line prefer-const
+  let message = error?.message || 'Error!';
 
-  let statusCode: number = 404;
+  // eslint-disable-next-line prefer-const
+  let statusCode: number = error?.statusCode || 404;
   // eslint-disable-next-line prefer-const
   let errorMessages = [
     {
@@ -20,15 +22,23 @@ export const globalErrorHandle = async (
     },
   ];
 
-  message = error?.message;
+  // message = error?.message || 'Something went wrong!';
 
-  statusCode = error?.statusCode;
+  // statusCode = error?.statusCode || 404;
 
-  res.status(statusCode).json({
-    success: false,
-    message,
-    errorMessages,
-    // stack: config.nodeEnv === 'development' ? error?.stack : null,
-    error,
-  });
+  if (statusCode === 401 && message === 'You have no access to this route') {
+    res.status(error.statusCode).json({
+      success: false,
+      statusCode,
+      message,
+    });
+  } else {
+    res.status(statusCode).json({
+      success: false,
+      message,
+      errorMessages,
+      // stack: config.nodeEnv === 'development' ? error?.stack : null,
+      error,
+    });
+  }
 };
