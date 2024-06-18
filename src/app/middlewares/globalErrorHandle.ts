@@ -9,9 +9,8 @@ export const globalErrorHandle = async (
   res: Response,
   next: NextFunction,
 ) => {
-  let message;
+  let message = 'Error!';
 
-  // eslint-disable-next-line prefer-const
   let statusCode: number = 404;
   // eslint-disable-next-line prefer-const
   let errorMessages = [
@@ -20,6 +19,10 @@ export const globalErrorHandle = async (
       message: 'Something went wrong!',
     },
   ];
+
+  message = error?.message;
+
+  statusCode = error?.statusCode;
 
   res.status(statusCode).json({
     success: false,

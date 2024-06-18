@@ -1,17 +1,58 @@
 import config from '../../config';
-import { TUser } from '../user/user.interface';
+import { TUser, TUserLogin } from '../user/user.interface';
 import bcrypt from 'bcrypt';
 import { User } from '../user/user.model';
+import { AppError } from '../../errors/AppError';
+import jwt from 'jsonwebtoken';
 
-const signUp = async (payload: TUser) => {
+const signup = async (payload: TUser) => {
   payload.password = await bcrypt.hash(
     payload.password,
     Number(config.saltOrRounds),
   );
-  const result = await User.create(payload);
+  const createUser = await User.create(payload);
+
+  const result = await User.findById(createUser._id);
+
   return result;
 };
 
+const login = async (payload: TUserLogin) => {
+  const user = await User.findOne({
+    email: payload.email,
+  }).select('+password');
+
+  if (!user) {
+    throw new AppError(401, 'Invalid email');
+  }
+
+  const isPasswordMatched = await bcrypt.compare(
+    payload?.password,
+    user?.password,
+  );
+
+  if (!isPasswordMatched) {
+    throw new AppError(401, 'Invalid password');
+  }
+
+  const jwtPayload = {
+    email: user?.email,
+    role: user?.role,
+  };
+
+  const token = jwt.sign(jwtPayload, config.jwtAccessToken as string, {
+    expiresIn: '1d',
+  });
+
+  const data = await User.findById(user?._id);
+
+  return {
+    token,
+    data,
+  };
+};
+
 export const AuthServices = {
-  signUp,
+  signup,
+  login,
 };

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const userValidation = z.object({
+export const userSignupValidation = z.object({
   name: z
     .string()
     .regex(
@@ -22,4 +22,9 @@ export const userValidation = z.object({
     .regex(/^\d+$/, 'Phone number must only contain digits'),
   address: z.string(),
   role: z.enum(['admin', 'user']),
+});
+
+export const userLoginValidation = z.object({
+  email: z.string().email(),
+  password: z.string(),
 });

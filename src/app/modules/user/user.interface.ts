@@ -5,6 +5,11 @@ export type TUser = {
   email: string;
   password: string;
   phone: string;
-  address: string;
   role: TRole;
+  address: string;
+};
+
+export type TUserLogin = {
+  email: string;
+  password: string;
 };
