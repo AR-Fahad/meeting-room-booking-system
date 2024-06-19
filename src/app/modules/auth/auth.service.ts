@@ -23,16 +23,17 @@ const login = async (payload: TUserLogin) => {
   }).select('+password');
 
   if (!user) {
-    throw new AppError(401, 'Invalid email');
+    throw new AppError(401, 'email', 'Invalid email');
   }
 
+  // to compare password that comes from body & password that comes from database is matched or not
   const isPasswordMatched = await bcrypt.compare(
     payload?.password,
     user?.password,
   );
 
   if (!isPasswordMatched) {
-    throw new AppError(401, 'Invalid password');
+    throw new AppError(401, 'password', 'Invalid password');
   }
 
   const jwtPayload = {

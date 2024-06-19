@@ -11,7 +11,7 @@ export const auth = (...requiredRole: TRole[]) => {
     const authorization = req?.headers?.authorization;
 
     if (!authorization) {
-      throw new AppError(401, 'You have no access to this route');
+      throw new AppError(401, '', 'You have no access to this route');
     }
 
     const token = (authorization as string).split(' ')[1];
@@ -21,7 +21,7 @@ export const auth = (...requiredRole: TRole[]) => {
       config.jwtAccessToken as string,
       function (err, decoded) {
         if (err) {
-          throw new AppError(401, 'You have no access to this route');
+          throw new AppError(401, '', 'You have no access to this route');
         }
         req.user = decoded as JwtPayload;
       },
@@ -30,11 +30,11 @@ export const auth = (...requiredRole: TRole[]) => {
     const { email, role } = req.user;
 
     if (requiredRole && !requiredRole.includes(role)) {
-      throw new AppError(401, 'You have no access to this route');
+      throw new AppError(401, '', 'You have no access to this route');
     }
 
     if (!(await User.findOne({ email, role }))) {
-      throw new AppError(401, 'You have no access to this route');
+      throw new AppError(401, '', 'You have no access to this route');
     }
 
     next();

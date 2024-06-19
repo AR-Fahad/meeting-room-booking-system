@@ -11,26 +11,18 @@ type TPayload<T> = {
 export const sendResponse = async <T>(res: Response, payload: TPayload<T>) => {
   const { success, statusCode, message, token, data } = payload;
 
+  const jsonData: TPayload<T> = {
+    success,
+    statusCode,
+    message,
+  };
+
   if (token) {
-    res.status(statusCode).json({
-      success,
-      statusCode,
-      message,
-      token,
-      data,
-    });
-  } else if (data === 'undefined') {
-    res.status(statusCode).json({
-      success,
-      statusCode,
-      message,
-    });
-  } else {
-    res.status(statusCode).json({
-      success,
-      statusCode,
-      message,
-      data,
-    });
+    jsonData.token = token;
+    jsonData.data = data;
+  } else if (data !== 'undefined') {
+    jsonData.data = data;
   }
+
+  res.status(statusCode).json(jsonData);
 };
