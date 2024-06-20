@@ -2,6 +2,12 @@
 /* eslint-disable no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import config from '../config';
+import { ZodError } from 'zod';
+import { handleZodError } from '../errors/handleZodError';
+import { TErrorMessages } from '../interfaces/error';
+import { handleDuplicateError } from '../errors/handleDuplicateError';
+import { handleCastError } from '../errors/handleCastError';
+import { handleValidationError } from '../errors/handleValidationError';
 
 export const globalErrorHandle = async (
   error: any,
@@ -9,36 +15,57 @@ export const globalErrorHandle = async (
   res: Response,
   next: NextFunction,
 ) => {
-  // eslint-disable-next-line prefer-const
-  let message = error?.message || 'Error!';
+  let message: string = 'Error';
 
-  // eslint-disable-next-line prefer-const
-  let statusCode: number = error?.statusCode || 404;
-  // eslint-disable-next-line prefer-const
-  let errorMessages = [
+  let statusCode: number = error?.statusCode || 500;
+
+  let errorMessages: TErrorMessages = [
     {
-      path: '',
-      message: 'Something went wrong!',
+      path: error?.path || '',
+      message: error?.message || 'Something went wrong!',
     },
   ];
 
-  // message = error?.message || 'Something went wrong!';
+  if (error instanceof ZodError) {
+    const err = handleZodError(error);
+    statusCode = err.statusCode;
+    message = err.message;
+    errorMessages = err.errorMessages as TErrorMessages;
+  } else if (error?.errorResponse?.code === 11000 || error?.code === 11000) {
+    const err = handleDuplicateError(error);
+    statusCode = err.statusCode;
+    message = err.message;
+    errorMessages = err.errorMessages as TErrorMessages;
+  } else if (error?.name === 'CastError') {
+    const err = handleCastError(error);
+    statusCode = err.statusCode;
+    message = err.message;
+    errorMessages = err.errorMessages as TErrorMessages;
+  } else if (error?.name === 'ValidationError') {
+    const err = handleValidationError(error);
+    statusCode = err.statusCode;
+    message = err.message;
+    errorMessages = err.errorMessages as TErrorMessages;
+  }
 
-  // statusCode = error?.statusCode || 404;
+  const authErrorMessage = error?.message;
 
-  if (statusCode === 401 && message === 'You have no access to this route') {
+  if (
+    statusCode === 401 &&
+    authErrorMessage === 'You have no access to this route'
+  ) {
     res.status(error.statusCode).json({
       success: false,
       statusCode,
-      message,
+      message: authErrorMessage,
     });
   } else {
     res.status(statusCode).json({
       success: false,
       message,
       errorMessages,
-      // stack: config.nodeEnv === 'development' ? error?.stack : null,
-      error,
+      stack: config.nodeEnv === 'development' ? error?.stack : null,
+      // error,
     });
   }
 };
