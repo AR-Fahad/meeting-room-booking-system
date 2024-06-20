@@ -106,7 +106,7 @@ const updateBooking = async (id: string, payload: Partial<TBooking>) => {
 
     // check whether result is found or not
     if (!result) {
-      throw new AppError(404, 'booking', 'Booking is not exists');
+      throw new AppError(400, 'booking', 'Booking is not exists');
     }
 
     // check isConfirmed value, base on its value update slots as well
@@ -150,7 +150,7 @@ const deleteBooking = async (id: string) => {
     { new: true },
   );
   if (!result) {
-    throw new AppError(404, 'booking', 'Booking is not exists');
+    throw new AppError(400, 'booking', 'Booking is not exists');
   }
   return result;
 };

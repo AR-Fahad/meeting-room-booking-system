@@ -15,12 +15,12 @@ const createSlots = async (payload: TSlot) => {
 
   // checking whether room is exists or not
   if (!isRoomExists) {
-    throw new AppError(404, 'room', 'Room is not exists');
+    throw new AppError(400, 'room', 'Room is not exists');
   }
 
   // checking that starttime is grater than or equal end time or not
   if (startTime >= endTime) {
-    throw new AppError(406, '', 'Start time must less than to end time');
+    throw new AppError(400, '', 'Start time must less than to end time');
   }
 
   const durationPerSlot = 60; // Assuming
@@ -31,7 +31,7 @@ const createSlots = async (payload: TSlot) => {
     durationPerSlot
   ) {
     throw new AppError(
-      406,
+      400,
       '',
       'Duration between start & end time must grater than or equal minimum duration 60 minutes',
     );
@@ -47,7 +47,7 @@ const createSlots = async (payload: TSlot) => {
   // checking slots on the same date also on the same time is found any data or not
   if (existingSlots && existingSlots.length !== 0) {
     throw new AppError(
-      406,
+      400,
       '',
       'There are few slots already exists within this given time on the same date',
     );

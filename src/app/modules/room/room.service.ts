@@ -16,7 +16,7 @@ const getRoom = async (id: string) => {
   const result = await Room.findById(id);
   // check whether room is deleted or not
   if (result?.isDeleted) {
-    throw new AppError(404, 'isDeleted', 'This room is already deleted');
+    throw new AppError(400, 'isDeleted', 'This room is already deleted');
   }
   return result;
 };
