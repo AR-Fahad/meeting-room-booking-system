@@ -55,38 +55,26 @@ const updateRoom = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await RoomServices.updateRoom(id, req.body);
 
-  // if no data found when retrieving data for update
-  if (!result) {
-    noDataFound(res);
-  }
   // if data found and no error when updating data
-  else {
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: 'Room updated successfully',
-      data: result,
-    });
-  }
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Room updated successfully',
+    data: result,
+  });
 });
 
 const deleteRoom = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await RoomServices.deleteRoom(id);
 
-  // if no data found when retrieving data for soft delete
-  if (!result) {
-    noDataFound(res);
-  }
   // if data found and no error when soft deleting
-  else {
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: 'Room deleted successfully',
-      data: result,
-    });
-  }
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Room deleted successfully',
+    data: result,
+  });
 });
 
 export const RoomControllers = {
