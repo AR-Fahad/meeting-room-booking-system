@@ -64,7 +64,8 @@ export const globalErrorHandle = async (
       success: false,
       message,
       errorMessages,
-      stack: config.nodeEnv === 'development' ? error?.stack : null,
+      stack: error?.stack || null, // this is not a best way
+      // stack: config.nodeEnv === 'development' ? error?.stack : null, // this is a proper way
       // error,
     });
   }
