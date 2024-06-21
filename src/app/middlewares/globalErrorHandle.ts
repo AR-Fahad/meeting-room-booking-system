@@ -15,7 +15,7 @@ export const globalErrorHandle = async (
   res: Response,
   next: NextFunction,
 ) => {
-  let message: string = 'Error';
+  let message: string = 'Custom Error';
 
   let statusCode: number = error?.statusCode || 500;
 
