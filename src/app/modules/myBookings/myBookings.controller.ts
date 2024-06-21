@@ -5,10 +5,10 @@ import { MyBookingsServices } from './myBooking.service';
 import { Request, Response } from 'express';
 
 const getMyBookings = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
+  const user = req?.user;
   const result = await MyBookingsServices.getMyBookings(user);
 
-  if (result.length === 0) {
+  if (result && result?.length === 0) {
     noDataFound(res);
   } else {
     sendResponse(res, {

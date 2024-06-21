@@ -6,6 +6,7 @@ import { noDataFound } from '../../utils/noDataFound';
 
 const createRoom = catchAsync(async (req: Request, res: Response) => {
   const result = await RoomServices.createRoom(req.body);
+
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -34,21 +35,15 @@ const getAllRooms = catchAsync(async (req: Request, res: Response) => {
 
 const getRoom = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
+
   const result = await RoomServices.getRoom(id);
 
-  // if no data found
-  if (!result) {
-    noDataFound(res);
-  }
-  // if data found
-  else {
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: 'Room retrieved successfully',
-      data: result,
-    });
-  }
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Room retrieved successfully',
+    data: result,
+  });
 });
 
 const updateRoom = catchAsync(async (req: Request, res: Response) => {

@@ -11,6 +11,7 @@ import {
 const createSlots = async (payload: TSlot) => {
   const { startTime, endTime, ...restSlot } = payload;
 
+  // find a room by _id
   const isRoomExists = await Room.findById(restSlot.room);
 
   // checking whether room is exists or not
@@ -20,7 +21,11 @@ const createSlots = async (payload: TSlot) => {
 
   // checking that starttime is grater than or equal end time or not
   if (startTime >= endTime) {
-    throw new AppError(400, '', 'Start time must less than to end time');
+    throw new AppError(
+      400,
+      'startTime, endTime',
+      'Start time must less than to end time',
+    );
   }
 
   const durationPerSlot = 60; // Assuming
@@ -32,8 +37,8 @@ const createSlots = async (payload: TSlot) => {
   ) {
     throw new AppError(
       400,
-      '',
-      'Duration between start & end time must grater than or equal minimum duration 60 minutes',
+      'startTime, endTime',
+      'Duration between start & end time must grater than or equal minimum 60 minutes',
     );
   }
 
@@ -45,11 +50,11 @@ const createSlots = async (payload: TSlot) => {
   });
 
   // checking slots on the same date also on the same time is found any data or not
-  if (existingSlots && existingSlots.length !== 0) {
+  if (existingSlots && existingSlots?.length !== 0) {
     throw new AppError(
       400,
-      '',
-      'There are few slots already exists within this given time on the same date',
+      'date, startTime, endTime',
+      'There are few slots already exists within this given time & date',
     );
   }
 
@@ -85,7 +90,7 @@ const getSlots = async (query: Record<string, unknown>) => {
     objQuery.room = query.roomId;
   }
 
-  // final result
+  // find slot by given query and isBooked:true with populating room
   const result = await Slot.find({ ...objQuery, isBooked: false }).populate(
     'room',
   );

@@ -5,10 +5,10 @@ import { Booking } from '../booking/booking.model';
 
 const getMyBookings = async (user: JwtPayload) => {
   // destructuring email from authenticated user
-  const { email } = user;
+  const { email, role } = user;
 
-  // find user by email
-  const isUserExists = await User.findOne({ email });
+  // find user by email, role
+  const isUserExists = await User.findOne({ email, role });
 
   // check whether user is exists or not
   if (!isUserExists) {

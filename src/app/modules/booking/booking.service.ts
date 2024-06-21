@@ -21,15 +21,23 @@ const createBooking = async (payload: TBooking) => {
       throw new AppError(400, 'room', 'Room is not exists');
     }
 
-    const isUserExists = await User.findById(payload.user);
+    // find user by user come from body
+    const isUserExists = await User.findOne({
+      _id: payload?.user,
+    });
+
     // checking whether user is exists or not
     if (!isUserExists) {
-      throw new AppError(400, 'room', 'User is not exists');
+      throw new AppError(400, 'user', 'User is not exists');
     }
 
     // checking whether slots array is empty or not
     if (!payload?.slots?.length) {
-      throw new AppError(400, 'slots', "Slots can't be blank");
+      throw new AppError(
+        400,
+        'slots',
+        "Slots can't be blank, minimum one slot needed",
+      );
     }
 
     const isSlotsExists = await Slot.find({
@@ -39,8 +47,12 @@ const createBooking = async (payload: TBooking) => {
     });
 
     // checking the lengths of isSlotsExists & slots come from body that slots are valid or not
-    if (isSlotsExists.length !== payload?.slots?.length) {
-      throw new AppError(400, 'slots', 'This slots are not available');
+    if (isSlotsExists?.length !== payload?.slots?.length) {
+      throw new AppError(
+        400,
+        'slots',
+        'One or more slots are invalid or not available',
+      );
     }
 
     // only for confirmed booking, isBooked will update to true
@@ -51,6 +63,8 @@ const createBooking = async (payload: TBooking) => {
         { new: true },
       ).session(session);
     }
+
+    delete payload?.totalAmount;
 
     // totalAmount is calculated in server like below
     const totalAmount = isRoomExists?.pricePerSlot * payload?.slots?.length;
@@ -104,9 +118,9 @@ const updateBooking = async (id: string, payload: Partial<TBooking>) => {
       },
     );
 
-    // check whether result is found or not
+    // check whether result is found or not for update
     if (!result) {
-      throw new AppError(400, 'booking', 'Booking is not exists');
+      throw new AppError(404, '_id', 'Booking is not found for update');
     }
 
     // check isConfirmed value, base on its value update slots as well
@@ -149,9 +163,11 @@ const deleteBooking = async (id: string) => {
     { isDeleted: true },
     { new: true },
   );
+  // check whether result is found or not for delete
   if (!result) {
-    throw new AppError(400, 'booking', 'Booking is not exists');
+    throw new AppError(404, '_id', 'Booking is not found for delete');
   }
+
   return result;
 };
 

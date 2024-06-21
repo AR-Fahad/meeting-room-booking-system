@@ -5,7 +5,7 @@ import { sendResponse } from '../../utils/sendResponse';
 import { noDataFound } from '../../utils/noDataFound';
 
 const createBooking = catchAsync(async (req: Request, res: Response) => {
-  const result = await BookingServices.createBooking(req.body);
+  const result = await BookingServices.createBooking(req?.body);
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -17,7 +17,7 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
 const getAllBookings = catchAsync(async (req: Request, res: Response) => {
   const result = await BookingServices.getAllBookings();
 
-  if (result.length === 0) {
+  if (result && result?.length === 0) {
     noDataFound(res);
   } else {
     sendResponse(res, {
