@@ -24,7 +24,6 @@ const userSchema = new Schema<TUser>(
     },
     role: {
       type: String,
-      required: true,
       enum: ['admin', 'user'],
     },
     address: {
@@ -33,6 +32,7 @@ const userSchema = new Schema<TUser>(
     },
   },
   {
+    timestamps: true,
     versionKey: false,
   },
 );

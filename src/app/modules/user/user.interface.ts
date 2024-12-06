@@ -13,3 +13,5 @@ export type TUserLogin = {
   email: string;
   password: string;
 };
+
+// Name, email, password, phone number, address.

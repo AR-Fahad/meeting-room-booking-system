@@ -1,4 +1,4 @@
-# Project: Meeting Room Booking System for Co-working spaces
+# Meeting Room Booking System for Co-working spaces Server
 
 ## Features:
 
@@ -8,6 +8,10 @@ It's a server for managing meeting room booking system. Features based on the fo
 2. **Room Model**
 3. **Slot Model**
 4. **Booking Model**
+
+## Live URL
+
+Live URL = **[MBooking Server](https://meeting-room-booking-system-topaz.vercel.app)**
 
 ## Models:
 
@@ -333,7 +337,8 @@ You must include "Bearer" at the beginning of the token!
   "room": "60d9c4e4f3b4b544b8b8d1c5",
   "date": "2024-06-15",
   "startTime": "09:00",
-  "endTime": "14:00"
+  "endTime": "14:00",
+  "durationPerSlot": 60 // in minutes
 }
 ```
 
@@ -735,7 +740,3 @@ You must include "Bearer" at the beginning of the token!
   }
 }
 ```
-
-##
-
-- **Live url: https://meeting-room-booking-system-topaz.vercel.app**

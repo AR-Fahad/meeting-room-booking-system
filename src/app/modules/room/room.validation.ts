@@ -12,6 +12,10 @@ export const createRoomValidation = z.object({
   capacity: z.number(),
   pricePerSlot: z.number(),
   amenities: z.string().array(),
+  image: z
+    .array(z.string())
+    .min(1, { message: 'At least one image is required' })
+    .max(4, { message: 'At most four images are allowed' }),
 });
 
 export const updateRoomValidation = z.object({

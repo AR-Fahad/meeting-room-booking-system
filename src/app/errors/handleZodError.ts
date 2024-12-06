@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
 
 export const handleZodError = (error: ZodError) => {
-  const statusCode = 400;
+  const statusCode = 422;
   const message = 'Validation Error';
   const errorMessages = error?.issues?.map((issue) => ({
     path: issue?.path[0],

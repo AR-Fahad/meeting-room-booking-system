@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { catchAsync } from '../../utils/catchAsync';
 import { RoomServices } from './room.service';
 import { sendResponse } from '../../utils/sendResponse';
-import { noDataFound } from '../../utils/noDataFound';
 
 const createRoom = catchAsync(async (req: Request, res: Response) => {
   const result = await RoomServices.createRoom(req.body);
@@ -16,21 +15,21 @@ const createRoom = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllRooms = catchAsync(async (req: Request, res: Response) => {
-  const result = await RoomServices.getAllRooms();
+  const query = req?.query;
+  const result = await RoomServices.getAllRooms(query);
 
   // if no data found
-  if (result && result.length === 0) {
-    noDataFound(res);
-  }
+  // if (result && result.length === 0) {
+  //   noDataFound(res);
+  // }
   // if data found
-  else {
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: 'Rooms retrieved successfully',
-      data: result,
-    });
-  }
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Rooms retrieved successfully',
+    data: result,
+  });
 });
 
 const getRoom = catchAsync(async (req: Request, res: Response) => {

@@ -29,6 +29,10 @@ const roomSchema = new Schema<TRoom>(
       type: [String],
       required: true,
     },
+    image: {
+      type: [String],
+      required: true,
+    },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -36,6 +40,7 @@ const roomSchema = new Schema<TRoom>(
   },
   {
     versionKey: false,
+    timestamps: true,
   },
 );
 

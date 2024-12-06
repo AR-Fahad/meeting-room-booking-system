@@ -22,6 +22,6 @@ roomRouter.put(
 
 roomRouter.get('/', RoomControllers.getAllRooms);
 
-roomRouter.get('/:id', RoomControllers.getRoom);
+roomRouter.get('/:id', auth('user'), RoomControllers.getRoom);
 
 roomRouter.delete('/:id', auth('admin'), RoomControllers.deleteRoom);

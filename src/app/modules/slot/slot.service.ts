@@ -3,77 +3,185 @@ import { Room } from '../room/room.model';
 import { TSlot } from './slot.interface';
 import { Slot } from './slot.model';
 import {
-  generateSlots,
-  generateEndTime,
   convertTimeToMinutes,
+  generateTimeSlots,
+  minutesToTime,
 } from './slot.util';
 
-const createSlots = async (payload: TSlot) => {
-  const { startTime, endTime, ...restSlot } = payload;
+const createSlots = async (payload: TSlot & { durationPerSlot: number }) => {
+  const { startTime, endTime, durationPerSlot, ...restSlot } = payload;
+
+  const newStart = convertTimeToMinutes(startTime);
+  const newEnd = convertTimeToMinutes(endTime);
+
+  const newStartTimeInMinutes = minutesToTime(newStart);
+  const newEndTimeInMinutes = minutesToTime(newEnd);
 
   // find a room by _id
   const isRoomExists = await Room.findById(restSlot.room);
 
   // checking whether room is exists or not
   if (!isRoomExists) {
-    throw new AppError(400, 'room', 'Room is not exists');
+    throw new AppError(404, 'room', 'Room is not exists');
+  }
+
+  const givenDate = new Date(restSlot.date);
+
+  // Current date (today's date)
+  const currentDate = new Date();
+
+  // Reset the time to midnight for accurate date comparison
+  currentDate.setHours(0, 0, 0, 0);
+  givenDate.setHours(0, 0, 0, 0);
+
+  if (givenDate <= currentDate) {
+    throw new AppError(422, 'date', 'Date must greater than current date');
   }
 
   // checking that starttime is grater than or equal end time or not
-  if (startTime >= endTime) {
+  if (newStart >= newEnd) {
     throw new AppError(
-      400,
+      422,
       'startTime, endTime',
       'Start time must less than to end time',
     );
   }
 
-  const durationPerSlot = 60; // Assuming
-
   // checking that duration between starttime & end time is less than minimum duration
-  if (
-    convertTimeToMinutes(endTime) - convertTimeToMinutes(startTime) <
-    durationPerSlot
-  ) {
+  if (newEnd - newStart < durationPerSlot) {
     throw new AppError(
-      400,
+      422,
       'startTime, endTime',
-      'Duration between start & end time must grater than or equal minimum 60 minutes',
+      `Duration between start & end time must grater than or equal duration:${durationPerSlot} minutes`,
     );
   }
 
   const existingSlots = await Slot.find({
     room: restSlot.room,
     date: restSlot.date,
-    startTime: { $gte: startTime },
-    endTime: { $lte: endTime },
+    $or: [
+      {
+        startTime: { $lte: newStartTimeInMinutes },
+        endTime: { $gt: newStartTimeInMinutes, $lte: newEndTimeInMinutes },
+      },
+      {
+        endTime: { $gte: newEndTimeInMinutes },
+        startTime: { $lt: newEndTimeInMinutes, $gte: newStartTimeInMinutes },
+      },
+      {
+        startTime: { $lte: newStartTimeInMinutes },
+        endTime: { $gte: newEndTimeInMinutes },
+      },
+      {
+        startTime: { $gt: newStartTimeInMinutes },
+        endTime: { $lt: newEndTimeInMinutes },
+      },
+    ],
+    isDeleted: false,
   });
 
   // checking slots on the same date also on the same time is found any data or not
   if (existingSlots && existingSlots?.length !== 0) {
     throw new AppError(
-      400,
+      409,
       'date, startTime, endTime',
-      'There are few slots already exists within this given time & date',
+      'There are few slots already exists within this given time on this date',
     );
   }
 
-  const newSlots = [];
+  const generateSlotsTimes = generateTimeSlots(
+    startTime,
+    endTime,
+    durationPerSlot,
+  );
 
-  // calculating total slots
-  const totalSlots = generateSlots(payload, durationPerSlot);
-
-  let timeStart = startTime;
-
-  // push in the new slots for create
-  for (let i = 0; i < totalSlots; i++) {
-    const timeEnd = generateEndTime(timeStart, durationPerSlot);
-    newSlots.push({ ...restSlot, startTime: timeStart, endTime: timeEnd });
-    timeStart = timeEnd;
-  }
+  const newSlots: TSlot[] = generateSlotsTimes.map((times) => ({
+    ...restSlot,
+    startTime: times?.startTime,
+    endTime: times?.endTime,
+  }));
 
   // create slots
   const result = await Slot.create(newSlots);
+
+  return result;
+};
+
+const updateSlot = async (id: string, updateInfo: Partial<TSlot>) => {
+  const { date, startTime, endTime, room } = updateInfo;
+  const newStart = convertTimeToMinutes(startTime as string);
+  const newEnd = convertTimeToMinutes(endTime as string);
+  const newStartTimeInMinutes = minutesToTime(newStart);
+  const newEndTimeInMinutes = minutesToTime(newEnd);
+  const givenDate = new Date(date as string);
+
+  // Current date (today's date)
+  const currentDate = new Date();
+
+  // Reset the time to midnight for accurate date comparison
+  currentDate.setHours(0, 0, 0, 0);
+  givenDate.setHours(0, 0, 0, 0);
+
+  if (givenDate <= currentDate) {
+    throw new AppError(422, 'date', 'Date must greater than current date');
+  }
+
+  // checking that starttime is grater than or equal end time or not
+  if (newStart >= newEnd) {
+    throw new AppError(
+      422,
+      'startTime, endTime',
+      'Start time must less than to end time',
+    );
+  }
+
+  const existingSlots = await Slot.find({
+    _id: { $nin: [id] },
+    room,
+    date,
+    $or: [
+      {
+        startTime: { $lte: newStartTimeInMinutes },
+        endTime: { $gt: newStartTimeInMinutes, $lte: newEndTimeInMinutes },
+      },
+      {
+        endTime: { $gte: newEndTimeInMinutes },
+        startTime: { $lt: newEndTimeInMinutes, $gte: newStartTimeInMinutes },
+      },
+      {
+        startTime: { $lte: newStartTimeInMinutes },
+        endTime: { $gte: newEndTimeInMinutes },
+      },
+      {
+        startTime: { $gt: newStartTimeInMinutes },
+        endTime: { $lt: newEndTimeInMinutes },
+      },
+    ],
+    isDeleted: false,
+  });
+
+  // checking slots on the same date also on the same time is found any data or not
+  if (existingSlots && existingSlots?.length !== 0) {
+    throw new AppError(
+      409,
+      'date, startTime, endTime',
+      'There are few slots already exists within this given time on this date',
+    );
+  }
+
+  const result = await Slot.findOneAndUpdate(
+    { _id: id, isBooked: false, isDeleted: false },
+    {
+      date,
+      startTime: newStartTimeInMinutes,
+      endTime: newEndTimeInMinutes,
+    },
+    { new: true },
+  );
+
+  if (!result) {
+    throw new AppError(404, 'slot', 'Slot is already booked or deleted');
+  }
 
   return result;
 };
@@ -90,15 +198,44 @@ const getSlots = async (query: Record<string, unknown>) => {
     objQuery.room = query.roomId;
   }
 
-  // find slot by given query and isBooked:true with populating room
-  const result = await Slot.find({ ...objQuery, isBooked: false }).populate(
-    'room',
-  );
+  // find slot by given query and isBooked: false, isDeleted: false with populating room
+  const result = await Slot.find({
+    ...objQuery,
+    isBooked: false,
+    isDeleted: false,
+  })
+    .populate('room')
+    .sort('-createdAt');
 
+  return result;
+};
+
+const getAllSlots = async (query: Record<string, unknown>) => {
+  const result = await Slot.find({
+    ...query,
+    isDeleted: false,
+  })
+    .populate('room')
+    .sort('-createdAt');
+  return result;
+};
+
+const deleteSlot = async (id: string) => {
+  const result = await Slot.findByIdAndUpdate(
+    id,
+    { isDeleted: true },
+    { new: true },
+  );
+  if (!result) {
+    throw new AppError(404, '_id', 'Slot is not found for delete');
+  }
   return result;
 };
 
 export const SlotServices = {
   createSlots,
   getSlots,
+  getAllSlots,
+  deleteSlot,
+  updateSlot,
 };

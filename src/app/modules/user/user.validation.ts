@@ -17,11 +17,10 @@ export const userSignupValidation = z.object({
     .regex(/[@$!%*?&]/, 'Password must contain at least one special character'),
   phone: z
     .string()
-    .min(10)
+    .min(8)
     .max(15)
     .regex(/^\d+$/, 'Phone number must only contain digits'),
   address: z.string(),
-  role: z.enum(['admin', 'user']),
 });
 
 export const userLoginValidation = z.object({

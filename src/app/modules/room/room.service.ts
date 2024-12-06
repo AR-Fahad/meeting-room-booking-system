@@ -1,3 +1,4 @@
+import { QueryBuilder } from '../../builders/QueryBuilder';
 import { AppError } from '../../errors/AppError';
 import { TRoom } from './room.interface';
 import { Room } from './room.model';
@@ -8,9 +9,18 @@ const createRoom = async (payload: TRoom) => {
   return result;
 };
 
-const getAllRooms = async () => {
-  // get all rooms
-  const result = await Room.find();
+const getAllRooms = async (query: Record<string, unknown>) => {
+  const roomQuery = new QueryBuilder(Room.find({ isDeleted: false }), query)
+    .search(['name'])
+    .filter()
+    .sort()
+    .paginate()
+    .priceRange()
+    .capacityRange()
+    .fields();
+
+  // get all rooms by query
+  const result = await roomQuery.modelQuery;
   return result;
 };
 
@@ -25,22 +35,23 @@ const getRoom = async (id: string) => {
 
   // check whether room is softly deleted or not
   if (result?.isDeleted) {
-    throw new AppError(400, 'isDeleted', 'This room is already deleted');
+    throw new AppError(404, 'isDeleted', 'This room is already deleted');
   }
 
   return result;
 };
 
 const updateRoom = async (id: string, payload: Partial<TRoom>) => {
-  const { amenities, ...restUpdatedRoom } = payload;
+  // const { amenities, ...restUpdatedRoom } = payload;
 
   // find a room by _id & dynamically update it
   const result = await Room.findByIdAndUpdate(
     id,
-    {
-      $addToSet: { amenities: { $each: amenities || [] } },
-      ...restUpdatedRoom,
-    },
+    // {
+    //  $addToSet: { amenities: { $each: amenities || [] } }, (It will be use if you want to push value by update)
+    //   ...restUpdatedRoom
+    // },
+    payload,
     { new: true },
   );
 

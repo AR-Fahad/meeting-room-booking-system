@@ -25,7 +25,19 @@ const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getUser = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.user;
+  const result = await AuthServices.getUser(email);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'User info retrieved successfully',
+    data: result,
+  });
+});
+
 export const AuthControllers = {
   signup,
   login,
+  getUser,
 };

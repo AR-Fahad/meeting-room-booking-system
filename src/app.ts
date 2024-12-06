@@ -8,7 +8,12 @@ const app: Application = express();
 
 // parser
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://meeting-room-booking-system-client-one.vercel.app',
+    credentials: true,
+  }),
+);
 
 // routes
 app.use('/api', router);

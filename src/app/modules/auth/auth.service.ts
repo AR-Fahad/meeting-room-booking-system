@@ -12,6 +12,9 @@ const signup = async (payload: TUser) => {
     Number(config.saltOrRounds),
   );
 
+  // by default role will be user
+  payload.role = 'user';
+
   // post an user
   const createUser = await User.create(payload);
 
@@ -64,7 +67,20 @@ const login = async (payload: TUserLogin) => {
   };
 };
 
+const getUser = async (email: string) => {
+  const user = await User.findOne({
+    email,
+  });
+
+  if (!user) {
+    throw new AppError(401, 'email', 'There is no user with this email');
+  }
+
+  return user;
+};
+
 export const AuthServices = {
   signup,
   login,
+  getUser,
 };

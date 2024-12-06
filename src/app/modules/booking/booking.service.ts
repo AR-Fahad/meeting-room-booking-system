@@ -18,23 +18,21 @@ const createBooking = async (payload: TBooking) => {
 
     // checking is room exists or not in the database, if it was softly deleted then also return error
     if (!isRoomExists) {
-      throw new AppError(400, 'room', 'Room is not exists');
+      throw new AppError(404, 'room', 'Room is not exists');
     }
 
     // find user by user come from body
-    const isUserExists = await User.findOne({
-      _id: payload?.user,
-    });
+    const isUserExists = await User.findById(payload?.user);
 
     // checking whether user is exists or not
     if (!isUserExists) {
-      throw new AppError(400, 'user', 'User is not exists');
+      throw new AppError(404, 'user', 'User is not exists');
     }
 
     // checking whether slots array is empty or not
     if (!payload?.slots?.length) {
       throw new AppError(
-        400,
+        404,
         'slots',
         "Slots can't be blank, minimum one slot needed",
       );
@@ -44,12 +42,13 @@ const createBooking = async (payload: TBooking) => {
       _id: { $in: payload?.slots },
       isBooked: false,
       room: payload?.room,
+      isDeleted: false,
     });
 
     // checking the lengths of isSlotsExists & slots come from body that slots are valid or not
     if (isSlotsExists?.length !== payload?.slots?.length) {
       throw new AppError(
-        400,
+        404,
         'slots',
         'One or more slots are invalid or not available',
       );
@@ -94,10 +93,11 @@ const createBooking = async (payload: TBooking) => {
 };
 
 const getAllBookings = async () => {
-  const result = await Booking.find()
+  const result = await Booking.find({ isDeleted: false })
     .populate('slots')
     .populate('room')
-    .populate('user');
+    .populate('user')
+    .sort('-createdAt');
   return result;
 };
 

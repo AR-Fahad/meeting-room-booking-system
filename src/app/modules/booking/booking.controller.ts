@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { catchAsync } from '../../utils/catchAsync';
 import { BookingServices } from './booking.service';
 import { sendResponse } from '../../utils/sendResponse';
-import { noDataFound } from '../../utils/noDataFound';
 
 const createBooking = catchAsync(async (req: Request, res: Response) => {
   const result = await BookingServices.createBooking(req?.body);
@@ -17,16 +16,12 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
 const getAllBookings = catchAsync(async (req: Request, res: Response) => {
   const result = await BookingServices.getAllBookings();
 
-  if (result && result?.length === 0) {
-    noDataFound(res);
-  } else {
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: 'All bookings retrieved successfully',
-      data: result,
-    });
-  }
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'All bookings retrieved successfully',
+    data: result,
+  });
 });
 
 const updateBooking = catchAsync(async (req: Request, res: Response) => {

@@ -12,21 +12,28 @@ export const createBookingValidation = z.object({
     .refine(
       (str) => {
         const parts = str.split('-');
+        const year = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10);
-        return month >= 1 && month <= 12;
+        const day = parseInt(parts[2], 10);
+
+        if (month < 1 || month > 12) return false;
+
+        const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
+        return day >= 1 && day <= daysInMonth;
       },
       {
-        message: 'Invalid month. Must be between 1 and 12',
+        message: 'Invalid day for the given month and year',
       },
     )
     .refine(
       (str) => {
-        const parts = str.split('-');
-        const day = parseInt(parts[2], 10);
-        return day >= 1 && day <= 31;
+        const inputDate = new Date(str);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set time to start of the day
+        return inputDate > today;
       },
       {
-        message: 'Invalid day. Must be between 1 and 31',
+        message: 'Date must be greater than the current date',
       },
     ),
   isConfirmed: z.enum(['confirmed', 'unconfirmed', 'canceled']).optional(),

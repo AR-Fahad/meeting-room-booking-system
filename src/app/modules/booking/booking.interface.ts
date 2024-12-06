@@ -10,4 +10,5 @@ export type TBooking = {
   totalAmount?: number;
   isConfirmed?: TIsConfirmed;
   isDeleted?: boolean;
+  isPaid?: boolean;
 };

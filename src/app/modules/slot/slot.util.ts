@@ -1,27 +1,43 @@
-import { TSlot } from './slot.interface';
-
 export const convertTimeToMinutes = (time: string) => {
-  const timeArray = time.split(':');
-  const hoursToMinutes = Number(timeArray[0]) * 60;
-  const minutes = Number(timeArray[1]);
-  const totalMinutes = hoursToMinutes + minutes;
-  return totalMinutes;
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
 };
 
-export const generateSlots = (payload: TSlot, durationPerSlot: number) => {
-  const start = convertTimeToMinutes(payload.startTime);
-  const end = convertTimeToMinutes(payload.endTime);
-  const duration = Math.abs(end - start);
-  const remainDuration = duration % durationPerSlot;
-  const totalSlots = (duration - remainDuration) / durationPerSlot;
-  return totalSlots;
+export const minutesToTime = (minutes: number) => {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  // Ensure hours and minutes are always two digits
+  const formattedHours = String(hours).padStart(2, '0');
+  const formattedMinutes = String(remainingMinutes).padStart(2, '0');
+  return `${formattedHours}:${formattedMinutes}`;
 };
 
-export const generateEndTime = (startTime: string, durationPerSlot: number) => {
-  const startTimeInMinutes = convertTimeToMinutes(startTime);
-  const endTimeInMinutes = startTimeInMinutes + durationPerSlot;
-  const endTimeMinutes = endTimeInMinutes % durationPerSlot;
-  const endTimeHours = (endTimeInMinutes - endTimeMinutes) / durationPerSlot;
-  const endTime = `${endTimeHours.toString().padStart(2, '0')}:${endTimeMinutes.toString().padStart(2, '0')}`;
-  return endTime;
+export const generateTimeSlots = (
+  startTime: string,
+  endTime: string,
+  durationPerSlot: number,
+) => {
+  const startInMinutes = convertTimeToMinutes(startTime);
+  const endInMinutes = convertTimeToMinutes(endTime);
+
+  const timeSlots = [];
+  let currentStartTime = startInMinutes;
+  while (currentStartTime + durationPerSlot <= endInMinutes) {
+    const currentEndTime = currentStartTime + durationPerSlot;
+    timeSlots.push({
+      startTime: minutesToTime(currentStartTime),
+      endTime: minutesToTime(currentEndTime),
+    });
+    currentStartTime = currentEndTime;
+  }
+
+  const remainingTime = endInMinutes - currentStartTime;
+  if (remainingTime > 0) {
+    timeSlots.push({
+      startTime: minutesToTime(currentStartTime),
+      endTime: minutesToTime(endInMinutes),
+    });
+  }
+
+  return timeSlots;
 };

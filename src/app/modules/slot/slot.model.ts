@@ -24,9 +24,14 @@ const slotSchema = new Schema<TSlot>(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     versionKey: false,
+    timestamps: true,
   },
 );
 
